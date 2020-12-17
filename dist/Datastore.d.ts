@@ -5,14 +5,9 @@ export declare type DatastoreProxyPath = {
     filter?: any;
 }[];
 export interface DatastoreInterface {
-    delete(): any;
-    set(value: any): any;
-    get(): any;
-    exists(): any;
-    push(value: any): any;
-    first(): any;
-    last(): any;
-    random(): any;
+    [key: string]: DatastoreInterface & Provider & {
+        (...args: any[]): any;
+    };
 }
-export declare function Datastore<P extends Provider>(db: Database<P>, path?: DatastoreProxyPath): any | DatastoreInterface;
+export declare function Datastore(db: Database, path?: DatastoreProxyPath): DatastoreInterface;
 //# sourceMappingURL=Datastore.d.ts.map

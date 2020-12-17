@@ -1,9 +1,9 @@
-import { DatastoreInterface, DatastoreProxyPath } from "./Datastore";
+import { DatastoreInterface } from "./Datastore";
 import { Provider } from "./Provider";
-export interface Database<P extends Provider> {
-    provider: new (db: Database<P>, path: DatastoreProxyPath) => P;
+export declare abstract class Database {
+    provider: typeof Provider;
     init(): Promise<any>;
     destroy(): Promise<any>;
-    data: DatastoreInterface & Provider;
+    data: DatastoreInterface;
 }
 //# sourceMappingURL=Database.d.ts.map

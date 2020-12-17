@@ -13,8 +13,16 @@ const Mongodb_1 = require("../Mongodb");
 const db = new Mongodb_1.MongoDatabase();
 db.init().then(() => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        let t = yield db.data.test({ _id: "5fda70bae8d65472d1dcd64c" }).get();
-        console.log(t);
+        let success = yield db.data.users.push({ id: 0, roles: [] });
+        if (!success)
+            throw new Error("couldn't insert new user");
+        let user = yield db.data.users({ id: 0 }).get();
+        success = yield db.data.users({ id: 0 }).roles.push({ type: "admin" });
+        if (!success)
+            throw new Error("couldn't add role for user");
+        success = yield db.data.users({ id: 1 }).delete();
+        if (!success)
+            throw new Error("couldn't add role for user");
     }
     catch (error) {
         console.error(error);

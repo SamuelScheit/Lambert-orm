@@ -1,3 +1,5 @@
+import { Database } from "./Database";
+import { DatastoreProxyPath } from "./Datastore";
 import { ProviderCache } from "./ProviderCache";
 
 declare global {
@@ -66,16 +68,20 @@ Array.prototype.last = function () {
  *
  */
 
-export interface Provider {
-	delete(): any;
-	set(value: any): any;
-	get(): any;
-	exists(): any;
-	push(value: any): any;
-	first(): any;
-	last(): any;
-	random(): any;
-	__getProvider(): this;
+export abstract class Provider {
+	constructor(protected db: Database, protected path: DatastoreProxyPath) {}
+
+	delete(): any {}
+	set(value: any): any {}
+	get(): any {}
+	exists(): any {}
+	push(value: any): any {}
+	first(): any {}
+	last(): any {}
+	random(): any {}
+	__getProvider(): this {
+		return this;
+	}
 
 	cache: ProviderCache;
 }

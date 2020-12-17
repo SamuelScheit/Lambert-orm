@@ -1,11 +1,20 @@
+import { Provider } from "..";
+import { Database } from "../Database";
 import { MongoDatabase } from "../Mongodb";
 
-const db = new MongoDatabase();
+const db: Database = new MongoDatabase();
 
 db.init().then(async () => {
 	try {
-		let t = await db.data.test({ _id: "5fda70bae8d65472d1dcd64c" }).get();
-		console.log(t);
+		let success = await db.data.users.push({ id: 0, roles: [] });
+		if (!success) throw new Error("couldn't insert new user");
+		let user = await db.data.users({ id: 0 }).get();
+
+		success = await db.data.users({ id: 0 }).roles.push({ type: "admin" });
+		if (!success) throw new Error("couldn't add role for user");
+
+		success = await db.data.users({ id: 1 }).delete();
+		if (!success) throw new Error("couldn't add role for user");
 	} catch (error) {
 		console.error(error);
 	}

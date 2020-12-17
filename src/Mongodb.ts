@@ -17,15 +17,15 @@ declare global {
 	}
 }
 
-export class MongoDatabase implements Database<MongodbProvider> {
+export class MongoDatabase implements Database {
 	private mongod?: MongoMemoryServer;
 	public mongoConnection?: Connection;
 	public provider = MongodbProvider;
 
 	constructor(private uri?: string) {}
 
-	get data(): any {
-		return Datastore<MongodbProvider>(this);
+	get data(): DatastoreInterface {
+		return Datastore(this);
 	}
 
 	async init() {
@@ -96,7 +96,7 @@ function decycle(obj: any, stack = []): any {
 		  Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, decycle(v, s)]));
 }
 
-export class MongodbProvider implements Provider {
+export class MongodbProvider extends Provider {
 	public collection: Collection;
 	public pipe: any[];
 	public document?: any;
@@ -105,11 +105,13 @@ export class MongodbProvider implements Provider {
 	public options: any = {};
 	public arrayFilters: any[] = [];
 
+	// @ts-ignore
 	public get cache() {
 		return new MongodbProviderCache(this);
 	}
 
-	constructor(private db: MongoDatabase, private path: DatastoreProxyPath) {
+	constructor(protected db: MongoDatabase, protected path: DatastoreProxyPath) {
+		super(db, path);
 		const collection = path[0];
 
 		if (typeof collection.filter == "function" || typeof collection.filter == "string") {

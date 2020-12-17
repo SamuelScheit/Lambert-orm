@@ -1,3 +1,5 @@
+import { Database } from "./Database";
+import { DatastoreProxyPath } from "./Datastore";
 import { ProviderCache } from "./ProviderCache";
 declare global {
     interface Array<T> {
@@ -58,7 +60,10 @@ declare global {
  * db.collection("guilds").deleteOne({id: "769302137364283432"})
  *
  */
-export interface Provider {
+export declare abstract class Provider {
+    protected db: Database;
+    protected path: DatastoreProxyPath;
+    constructor(db: Database, path: DatastoreProxyPath);
     delete(): any;
     set(value: any): any;
     get(): any;

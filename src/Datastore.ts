@@ -17,20 +17,10 @@ export type DatastoreProxyPath = { name: string; filter?: any }[];
 type Methods = "delete" | "set" | "get" | "exists" | "push" | "first" | "last" | "random" | "__getProvider";
 
 export interface DatastoreInterface {
-	delete(): any;
-	set(value: any): any;
-	get(): any;
-	exists(): any;
-	push(value: any): any;
-	first(): any;
-	last(): any;
-	random(): any;
+	[key: string]: DatastoreInterface & Provider & { (...args: any[]): any };
 }
 
-export function Datastore<P extends Provider>(
-	db: Database<P>,
-	path: DatastoreProxyPath = []
-): any | DatastoreInterface {
+export function Datastore(db: Database, path: DatastoreProxyPath = []): DatastoreInterface {
 	let method: Methods;
 
 	const handler = {
@@ -47,9 +37,11 @@ export function Datastore<P extends Provider>(
 		apply(_: any, self: any, args: any[]): WindowProxy | Promise<any> {
 			var arg = args[0];
 
+			// @ts-ignore
 			if (method === "__getProvider") return Promise.resolve(new db.provider(db, path));
 
 			if (methods.includes(method)) {
+				// @ts-ignore
 				return new db.provider(db, path)[method](arg); // actually run the query
 			}
 

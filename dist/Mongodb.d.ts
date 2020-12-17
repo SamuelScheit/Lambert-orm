@@ -2,19 +2,19 @@ import { Collection, Connection } from "mongoose";
 import { Provider } from "./Provider";
 import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
 import { Database } from "./Database";
-import { DatastoreProxyPath } from "./Datastore";
+import { DatastoreInterface, DatastoreProxyPath } from "./Datastore";
 declare global {
     interface Array<T> {
         last(): T;
     }
 }
-export declare class MongoDatabase implements Database<MongodbProvider> {
+export declare class MongoDatabase implements Database {
     private uri?;
     private mongod?;
     mongoConnection?: Connection;
     provider: typeof MongodbProvider;
     constructor(uri?: string | undefined);
-    get data(): any;
+    get data(): DatastoreInterface;
     init(): Promise<void>;
     destroy(): Promise<void>;
 }
@@ -26,9 +26,9 @@ export declare class MongodbProviderCache extends ProviderCache {
     update: (e: any) => void;
     destroy(): Promise<void>;
 }
-export declare class MongodbProvider implements Provider {
-    private db;
-    private path;
+export declare class MongodbProvider extends Provider {
+    protected db: MongoDatabase;
+    protected path: DatastoreProxyPath;
     collection: Collection;
     pipe: any[];
     document?: any;
@@ -39,7 +39,7 @@ export declare class MongodbProvider implements Provider {
     get cache(): MongodbProviderCache;
     constructor(db: MongoDatabase, path: DatastoreProxyPath);
     convertFilterToQuery(obj: any): any;
-    delete(): Promise<boolean> | Promise<import("mongodb").DeleteWriteOpResultObject> | Promise<void>;
+    delete(): Promise<void> | Promise<boolean> | Promise<import("mongodb").DeleteWriteOpResultObject>;
     get(): Promise<any>;
     set(value: any): any;
     exists(): Promise<boolean>;

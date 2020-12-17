@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongodbProvider = exports.MongodbProviderCache = exports.MongoDatabase = void 0;
 const mongodb_memory_server_1 = require("mongodb-memory-server");
 const mongoose_1 = __importDefault(require("mongoose"));
+const Provider_1 = require("./Provider");
 const ProviderCache_1 = require("./ProviderCache");
 const fs_1 = __importDefault(require("fs"));
 const Datastore_1 = require("./Datastore");
@@ -102,9 +103,10 @@ function decycle(obj, stack = []) {
         : // @ts-ignore
             Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, decycle(v, s)]));
 }
-class MongodbProvider {
+class MongodbProvider extends Provider_1.Provider {
     constructor(db, path) {
         var _a;
+        super(db, path);
         this.db = db;
         this.path = path;
         this.options = {};
@@ -155,6 +157,7 @@ class MongodbProvider {
         }
         this.options.upsert = true;
     }
+    // @ts-ignore
     get cache() {
         return new MongodbProviderCache(this);
     }

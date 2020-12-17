@@ -28,9 +28,11 @@ function Datastore(db, path = []) {
         },
         apply(_, self, args) {
             var arg = args[0];
+            // @ts-ignore
             if (method === "__getProvider")
                 return Promise.resolve(new db.provider(db, path));
             if (methods.includes(method)) {
+                // @ts-ignore
                 return new db.provider(db, path)[method](arg); // actually run the query
             }
             path[path.length - 1].filter = arg;
