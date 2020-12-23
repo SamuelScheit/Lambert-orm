@@ -10,4 +10,3 @@ export interface DatastoreInterface {
     };
 }
 export declare function Datastore(db: Database, path?: DatastoreProxyPath): DatastoreInterface;
-//# sourceMappingURL=Datastore.d.ts.map

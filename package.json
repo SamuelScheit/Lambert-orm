@@ -11,9 +11,14 @@
 		"type": "git",
 		"url": "git+https://github.com/Trenite/Lambert-ORM.git"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"keywords": [
+		"lambert",
+		"ORM",
+		"object relational mapping",
+		"database"
+	],
+	"author": "flam3rboy",
+	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/Trenite/Lambert-ORM/issues"
 	},

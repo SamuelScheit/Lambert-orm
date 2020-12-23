@@ -52,4 +52,3 @@ export declare class MongodbProvider extends Provider {
     random(): Promise<any>;
     __getProvider(): this;
 }
-//# sourceMappingURL=Mongodb.d.ts.map

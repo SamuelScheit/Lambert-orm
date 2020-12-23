@@ -6,4 +6,3 @@ export declare abstract class Database {
     destroy(): Promise<any>;
     data: DatastoreInterface;
 }
-//# sourceMappingURL=Database.d.ts.map

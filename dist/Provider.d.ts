@@ -78,4 +78,3 @@ export declare abstract class Provider {
     __getProvider(): this;
     cache: ProviderCache;
 }
-//# sourceMappingURL=Provider.d.ts.map
