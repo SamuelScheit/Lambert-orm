@@ -1,9 +1,7 @@
 # Lambert-ORM
 A promise-based Object–Relational Mapping layer for various databases.
 
-This allows easily to access your database similar like accessing an object.
-
-The library was designed so that you can change the underlying database engine without changing your code.
+This allows easy access to a database much like like accessing an object.
 
 The library design facilitates exchanging the underlying database engine without changing your application code.
 
@@ -28,12 +26,12 @@ import "lambert-orm";
 ```
 
 ## Database
-Choose your database engine: ``MongoDatabase``
+Choose a database engine: ``MongoDatabase``
 
 At the moment there is only an implementation for MongoDB available, however I will add others.
-You can also write your own database class and submit a pull request.
+You can also implement your own database class and submit a pull request.
 
-Every Database has an ``.init()`` method whose execution must be awaited before using the db.
+Every Database has an ``.init()`` method whose execution must be awaited before using the database.
 ```ts
 class Database {
     init   (): Promise<any>;
@@ -41,9 +39,8 @@ class Database {
     data     : DatastoreInterface; // ES6 Proxy Object
 }
 ```
-To use the db, access the ``.data`` property and specify the path.
-e.g.: ``db.data.users.name`` (the path for this example is ``users.name``).
-After that you can call those operations on this path:
+To use the database, access the ``.data`` property and specify the path.
+e.g.: ``db.data.users.name`` (the path for this example is ``users.name``). Those operations can then be called on the path:
 
 ## Operations
 
@@ -57,13 +54,13 @@ set(value: any)             : Promise<boolean>; // sets the value for this path
 exists()                    : Promise<boolean>; // checks if a value for this path exists
 push(value: any)            : Promise<boolean>; // pushes the value into the array for this path
 ```
-All operations are asynchronous and return a [promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise) which you have to await.
+All operations are asynchronous and return a [promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise) which have to be awaited.
 A ``Promise<boolean>`` as a return value indicates a successful operation.
 
 ### Projection
 The ``.get(projection?: Projection)`` function can optionally accept a projection parameter.
 
-A Projection is a Key-Value Object of booleans representing wether or not you want to receive those properties. 
+A Projection is a Key-Value Object of booleans that indicates whether these properties should be received. 
 ```ts
 type Projection = {
     [index: string]: boolean;
@@ -72,7 +69,7 @@ type Projection = {
 var projection = { id: true, name: true}
 ```
 
-For example, if a database specified with a ``boards`` table which includes board objects like: ``{ id: number, name: string, members: [], posts: [] }`` and only id's and name's shall be accessed. 
+For example, a database with a ``boards`` table that contains  board objects like: ``{ id: number, name: string, members: [], posts: [] }`` and only ids and names should be accessed. 
 
 The projection parameters can be used to specify multiple but not all properties to be retrieved e.g:
 ```js
@@ -81,13 +78,15 @@ db.data.boards.get({ id: true, name: true});
 
 ### Filter sub arrays
 
-Filters can be used to get a specific card in the example above, by calling the property with ``.property(filter)`` while accessing the path.
+Filters can be used to get a specific card in the example above, by calling the property with ``.property(filter)`` when accessing the path.
 
-A filter can be an object or a function (Warning this function will be called for every entry in the array) e.g:
+A filter can be an object or a function which will be called for every entry in the array and can be specified for each property in the path.
+
+#### Example:
 ```js
 db.data.boards({id: 1}).get()
 ```
-Multiple filters can be applied e.g. ``db.data.boards({id: 1}).posts({id: 0}).comments({id: 1}).get()``
+ e.g. ``db.data.boards({id: 1}).posts({id: 0}).comments({id: 1}).get()``
 
 ## Full Example
 ```js
