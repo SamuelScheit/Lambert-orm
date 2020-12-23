@@ -17,12 +17,16 @@ db.init().then(() => __awaiter(void 0, void 0, void 0, function* () {
         if (!success)
             throw new Error("couldn't insert new user");
         let user = yield db.data.users({ id: 0 }).get();
-        success = yield db.data.users({ id: 0 }).roles.push({ type: "admin" });
+        success = yield db.data
+            .users({ id: 0 })
+            .roles.push({ type: "admin", name: "hey", permissions: 2, users: [1, 2, 3, 4] });
         if (!success)
             throw new Error("couldn't add role for user");
         success = yield db.data.users({ id: 1 }).delete();
         if (!success)
             throw new Error("couldn't add role for user");
+        // @ts-ignore
+        console.log(yield db.data.users.get());
     }
     catch (error) {
         console.error(error);

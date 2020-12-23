@@ -54,6 +54,7 @@ class MongoDatabase {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
             });
+            this.mongoConnection.on("error", console.error);
         });
     }
     destroy() {
@@ -70,21 +71,38 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
         super(provider, opts);
         this.provider = provider;
         this.update = (e) => {
-            console.log(this, e);
+            console.log("changestream", this, e);
         };
     }
     init() {
-        this.changeStream = this.provider.collection.watch(this.provider.pipe);
-        this.changeStream.on("change", this.update);
-        return super.init();
+        const _super = Object.create(null, {
+            init: { get: () => super.init }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield new Promise((resolve, reject) => {
+                    this.changeStream = this.provider.collection.watch(this.provider.pipe);
+                    this.changeStream.once("error", reject);
+                    this.changeStream.once("close", reject);
+                    this.changeStream.once("end", reject);
+                    // this.changeStream.once("resumeTokenChanged", resolve);
+                    this.changeStream.on("change", this.update);
+                });
+            }
+            catch (error) {
+                console.error("change streams are not supported", error);
+            }
+            return _super.init.call(this);
+        });
     }
     destroy() {
         const _super = Object.create(null, {
             destroy: { get: () => super.destroy }
         });
+        var _a, _b;
         return __awaiter(this, void 0, void 0, function* () {
-            this.changeStream.off("change", this.update);
-            yield this.changeStream.close();
+            (_a = this.changeStream) === null || _a === void 0 ? void 0 : _a.off("change", this.update);
+            yield ((_b = this.changeStream) === null || _b === void 0 ? void 0 : _b.close());
             return _super.destroy.call(this);
         });
     }
@@ -109,6 +127,7 @@ class MongodbProvider extends Provider_1.Provider {
         super(db, path);
         this.db = db;
         this.path = path;
+        this.pipe = [];
         this.options = {};
         this.arrayFilters = [];
         const collection = path[0];
@@ -129,16 +148,17 @@ class MongodbProvider extends Provider_1.Provider {
         if (!db.mongoConnection)
             throw new Error("Database not connected");
         this.collection = db.mongoConnection.collection(collection.name);
-        if (collection.filter) {
+        if (path.length) {
             var pipe = [];
             var arrayFilters = [];
             var up = [];
             var i = 0;
-            pipe.push(collection.filter);
+            if (collection.filter)
+                pipe.push(collection.filter);
             this.path.forEach((x, i) => {
                 if (!x.filter) {
                     up.push(x.name);
-                    if (!pipe.last()["$project"])
+                    if (!(pipe.last() || {})["$project"])
                         return pipe.push({ $project: { [x.name]: "$" + x.name } });
                     var projection = pipe.last()["$project"];
                     var key = Object.keys(projection)[0];
@@ -162,6 +182,8 @@ class MongodbProvider extends Provider_1.Provider {
         return new MongodbProviderCache(this);
     }
     convertFilterToQuery(obj) {
+        if (!obj)
+            return obj;
         var walked = [];
         var res = {};
         var stack = [{ obj: obj, stack: "" }];
@@ -202,16 +224,32 @@ class MongodbProvider extends Provider_1.Provider {
             return this.collection.deleteOne(this.document);
         return this.collection.conn.dropCollection(this.collection.name);
     }
-    get() {
+    get(projection) {
         return __awaiter(this, void 0, void 0, function* () {
+            projection = this.convertFilterToQuery(projection);
             if (this.pipe.length) {
                 var lastProp = Object.keys(this.pipe.last()["$project"] || {})[0];
-                if (this.pipe.last()["$match"] && this.pipe.length > 1)
-                    this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to get properly get the element if last pipe operator was an array filter
+                if (projection) {
+                    if (lastProp)
+                        this.pipe.last()["$project"][lastProp] = projection;
+                    else
+                        this.pipe.push({ $project: projection });
+                }
+                // if (this.pipe.last()["$match"] && this.pipe.length > 1)
+                // 	this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to properly get the element if last pipe operator was an array filter
                 var result = yield this.collection.aggregate(this.pipe).toArray();
-                return result && result.length ? (lastProp ? result[0][lastProp] : result[0]) : undefined;
+                if (result && result.length) {
+                    if (result.length === 1)
+                        return lastProp ? result[0][lastProp] : result[0];
+                    else
+                        return result;
+                }
+                return undefined;
             }
-            return this.collection.find({}).toArray();
+            return this.collection
+                .find({})
+                .project(projection)
+                .toArray();
         });
     }
     set(value) {

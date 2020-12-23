@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Datastore = void 0;
 const noop = () => { };
-const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random"];
+const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random", "__getProvider"];
 const reflectors = [
     "toString",
     "valueOf",
@@ -30,7 +30,7 @@ function Datastore(db, path = []) {
             var arg = args[0];
             // @ts-ignore
             if (method === "__getProvider")
-                return Promise.resolve(new db.provider(db, path));
+                return new db.provider(db, path);
             if (methods.includes(method)) {
                 // @ts-ignore
                 return new db.provider(db, path)[method](arg); // actually run the query

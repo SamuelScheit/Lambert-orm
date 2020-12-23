@@ -60,13 +60,16 @@ declare global {
  * db.collection("guilds").deleteOne({id: "769302137364283432"})
  *
  */
+export declare type Projection = {
+    [index: string]: boolean;
+};
 export declare abstract class Provider {
     protected db: Database;
     protected path: DatastoreProxyPath;
     constructor(db: Database, path: DatastoreProxyPath);
     delete(): any;
     set(value: any): any;
-    get(): any;
+    get(projection?: Projection): any;
     exists(): any;
     push(value: any): any;
     first(): any;

@@ -1,7 +1,7 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose, { Collection, Connection, Types } from "mongoose";
 import { ChangeStream } from "mongodb";
-import { Provider } from "./Provider";
+import { Projection, Provider } from "./Provider";
 import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
 import { Database } from "./Database";
 import fs from "fs";
@@ -50,6 +50,7 @@ export class MongoDatabase implements Database {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 		});
+		this.mongoConnection.on("error", console.error);
 	}
 
 	async destroy() {
@@ -58,26 +59,36 @@ export class MongoDatabase implements Database {
 }
 
 export class MongodbProviderCache extends ProviderCache {
-	private changeStream: ChangeStream;
+	private changeStream?: ChangeStream;
 
 	constructor(public provider: MongodbProvider, opts?: ProviderCacheOptions) {
 		// @ts-ignore
 		super(provider, opts);
 	}
 
-	init() {
-		this.changeStream = this.provider.collection.watch(this.provider.pipe);
-		this.changeStream.on("change", this.update);
+	async init() {
+		try {
+			await new Promise((resolve, reject) => {
+				this.changeStream = this.provider.collection.watch(this.provider.pipe);
+				this.changeStream.once("error", reject);
+				this.changeStream.once("close", reject);
+				this.changeStream.once("end", reject);
+				// this.changeStream.once("resumeTokenChanged", resolve);
+				this.changeStream.on("change", this.update);
+			});
+		} catch (error) {
+			console.error("change streams are not supported", error);
+		}
 		return super.init();
 	}
 
 	update = (e: any) => {
-		console.log(this, e);
+		console.log("changestream", this, e);
 	};
 
 	async destroy() {
-		this.changeStream.off("change", this.update);
-		await this.changeStream.close();
+		this.changeStream?.off("change", this.update);
+		await this.changeStream?.close();
 		return super.destroy();
 	}
 }
@@ -98,7 +109,7 @@ function decycle(obj: any, stack = []): any {
 
 export class MongodbProvider extends Provider {
 	public collection: Collection;
-	public pipe: any[];
+	public pipe: any[] = [];
 	public document?: any;
 	public subpath?: string;
 	public updatepath?: string;
@@ -134,18 +145,18 @@ export class MongodbProvider extends Provider {
 
 		this.collection = db.mongoConnection.collection(collection.name);
 
-		if (collection.filter) {
+		if (path.length) {
 			var pipe: any[] = [];
 			var arrayFilters: any[] = [];
 			var up: string[] = [];
 			var i = 0;
 
-			pipe.push(collection.filter);
+			if (collection.filter) pipe.push(collection.filter);
 
 			this.path.forEach((x, i) => {
 				if (!x.filter) {
 					up.push(x.name);
-					if (!pipe.last()["$project"]) return pipe.push({ $project: { [x.name]: "$" + x.name } });
+					if (!(pipe.last() || {})["$project"]) return pipe.push({ $project: { [x.name]: "$" + x.name } });
 
 					var projection = pipe.last()["$project"];
 					var key = Object.keys(projection)[0];
@@ -171,6 +182,7 @@ export class MongodbProvider extends Provider {
 	}
 
 	convertFilterToQuery(obj: any) {
+		if (!obj) return obj;
 		var walked = [];
 		var res: any = {};
 		var stack: any = [{ obj: obj, stack: "" }];
@@ -218,16 +230,29 @@ export class MongodbProvider extends Provider {
 		return this.collection.conn.dropCollection(this.collection.name);
 	}
 
-	async get() {
+	async get(projection?: Projection) {
+		projection = this.convertFilterToQuery(projection);
 		if (this.pipe.length) {
-			var lastProp = Object.keys(this.pipe.last()["$project"] || {})[0];
-			if (this.pipe.last()["$match"] && this.pipe.length > 1)
-				this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to get properly get the element if last pipe operator was an array filter
+			var lastProp: string | undefined = Object.keys(this.pipe.last()["$project"] || {})[0];
+			if (projection) {
+				if (lastProp) this.pipe.last()["$project"][lastProp] = projection;
+				else this.pipe.push({ $project: projection });
+			}
+
+			// if (this.pipe.last()["$match"] && this.pipe.length > 1)
+			// 	this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to properly get the element if last pipe operator was an array filter
 			var result = await this.collection.aggregate(this.pipe).toArray();
-			return result && result.length ? (lastProp ? result[0][lastProp] : result[0]) : undefined;
+			if (result && result.length) {
+				if (result.length === 1) return lastProp ? result[0][lastProp] : result[0];
+				else return result;
+			}
+			return undefined;
 		}
 
-		return this.collection.find({}).toArray();
+		return this.collection
+			.find({})
+			.project(<any>projection)
+			.toArray();
 	}
 
 	set(value: any): any {

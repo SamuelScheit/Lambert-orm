@@ -68,12 +68,16 @@ Array.prototype.last = function () {
  *
  */
 
+export type Projection = {
+	[index: string]: boolean;
+};
+
 export abstract class Provider {
 	constructor(protected db: Database, protected path: DatastoreProxyPath) {}
 
 	delete(): any {}
 	set(value: any): any {}
-	get(): any {}
+	get(projection?: Projection): any {}
 	exists(): any {}
 	push(value: any): any {}
 	first(): any {}

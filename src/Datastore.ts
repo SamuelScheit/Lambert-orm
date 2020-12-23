@@ -2,7 +2,7 @@ import { Database } from "./Database";
 import { Provider } from "./Provider";
 
 const noop = () => {};
-const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random"];
+const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random", "__getProvider"];
 const reflectors = [
 	"toString",
 	"valueOf",
@@ -38,7 +38,7 @@ export function Datastore(db: Database, path: DatastoreProxyPath = []): Datastor
 			var arg = args[0];
 
 			// @ts-ignore
-			if (method === "__getProvider") return Promise.resolve(new db.provider(db, path));
+			if (method === "__getProvider") return new db.provider(db, path);
 
 			if (methods.includes(method)) {
 				// @ts-ignore
