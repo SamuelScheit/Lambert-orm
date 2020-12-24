@@ -13,9 +13,11 @@
 	},
 	"keywords": [
 		"lambert",
-		"ORM",
+		"database",
+		"mongodb",
+		"abstraction layer",
 		"object relational mapping",
-		"database"
+		"ORM"
 	],
 	"author": "flam3rboy",
 	"license": "MIT",

@@ -9,20 +9,20 @@ Also it only get's/set's the necessary data for the operations and not the whole
 
 ## Installation
 ```
-npm i lambert-orm
-# or "yarn add lambert-orm"
+npm i lambert-db
+# or "yarn add lambert-db"
 ```
 
 ## Usage
 ES5 import
 
 ```js
-require("lambert-orm");
+require("lambert-db");
 ```
 or ES6 import
 
 ```js
-import "lambert-orm";
+import "lambert-db";
 ```
 
 ## Database
@@ -102,7 +102,7 @@ await db.data.boards({id: 1}).posts({id: 0}).comments.push({author: 1, content: 
 
 ## Full Example
 ```js
-const { MongoDatabase } = require("lambert-orm");
+const { MongoDatabase } = require("lambert-db");
 
 const db: Database = new MongoDatabase();
 
