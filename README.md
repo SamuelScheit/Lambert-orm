@@ -1,5 +1,5 @@
-# Lambert-ORM
-A promise-based Object–Relational Mapping layer for various databases.
+# Lambert-db
+A Database abstraction layer for different DB Engines
 
 This allows easy access to a database much like like accessing an object.
 

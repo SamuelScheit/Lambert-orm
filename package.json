@@ -1,7 +1,7 @@
 {
-	"name": "lambert-orm",
+	"name": "lambert-db",
 	"version": "1.0.0",
-	"description": "A Object–relational mapping layer for different Databases Engines",
+	"description": "A Database abstraction layer for different DB Engines",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
