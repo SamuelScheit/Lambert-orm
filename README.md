@@ -40,7 +40,11 @@ class Database {
 }
 ```
 To use the database, access the ``.data`` property and specify the path.
-e.g.: ``db.data.users.name`` (the path for this example is ``users.name``). The below operations can then be called on the path:
+#### Example
+```js
+db.data.users.name // (the path for this example is users.name). 
+``` 
+The below operations can then be called on the path:
 
 ## Operations
 
@@ -56,6 +60,13 @@ push(value: any)            : Promise<boolean>; // pushes the value into the arr
 ```
 All operations are asynchronous and return a [promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise) which have to be awaited.
 The return value of type ``Promise<boolean>`` indicates a successful operation.
+#### Example
+```js
+await db.data.users.push({id: 1, name: "test", posts: [1,2,3] }) // this will insert this user object
+await db.data.users.name.set("hello") // this will set the name hello for all users
+await db.data.users.name.get() // this will return an array with the users names
+await db.data.users.delete() // this will delete all users
+```
 
 ### Projection
 The ``.get(projection?: Projection)`` function can optionally accept a projection parameter.
@@ -73,7 +84,7 @@ For example, a database with a ``boards`` table that contains  board objects lik
 
 The projection parameters can be used to specify multiple but not all properties to be retrieved e.g:
 ```js
-db.data.boards.get({ id: true, name: true});
+await db.data.boards.get({ id: true, name: true}); // This will only return the id and name of the boards
 ```
 
 ### Filter sub arrays
@@ -84,9 +95,10 @@ A filter can be an object or a function which will be called for every entry in 
 
 #### Example:
 ```js
-db.data.boards({id: 1}).get()
-db.data.boards({id: 1}).posts({id: 0}).comments({id: 1}).get()
+await db.data.boards({id: 1}).get() // This will return the board with id: 1 and insert 
+await db.data.boards({id: 1}).posts({id: 0}).comments.push({author: 1, content: "test"}) // This will post a comment to board.id: 1 and post.id: 0
 ```
+
 
 ## Full Example
 ```js
@@ -101,12 +113,12 @@ db.init().then(async () => {
 	let user = await db.data.users({ id: 0 }).get();
 	console.log(user);
 	
-	success = await db.data.users({ id: 0 }).roles.push({ type: "admin", name: "hey", permissions: 2 });
-	if (!success) throw new Error("couldn't add role for user");
-
-	success = await db.data.users({ id: 1 }).delete();
+	success = await db.data.users({ id: 0 }).roles.push({ type: "admin", name: "test", permissions: 2 });
 	if (!success) throw new Error("couldn't add role for user");
 
 	console.log(await db.data.users.get({ id: true}));
+	
+	success = await db.data.users({ id: 1 }).delete();
+	if (!success) throw new Error("couldn't delete user");
 });
 ```
