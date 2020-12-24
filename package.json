@@ -9,7 +9,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/Trenite/Lambert-ORM.git"
+		"url": "git+https://github.com/Trenite/Lambert-db.git"
 	},
 	"keywords": [
 		"lambert",
@@ -17,14 +17,14 @@
 		"mongodb",
 		"abstraction layer",
 		"object relational mapping",
-		"ORM"
+		"db"
 	],
 	"author": "flam3rboy",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/Trenite/Lambert-ORM/issues"
+		"url": "https://github.com/Trenite/Lambert-db/issues"
 	},
-	"homepage": "https://github.com/Trenite/Lambert-ORM#readme",
+	"homepage": "https://github.com/Trenite/Lambert-db#readme",
 	"devDependencies": {
 		"@types/node": "^14.14.14",
 		"@types/mongodb": "^3.6.3",
