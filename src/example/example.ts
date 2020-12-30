@@ -8,6 +8,7 @@ db.init().then(async () => {
 		let success = await db.data.users.push({ id: 0, roles: [] });
 		if (!success) throw new Error("couldn't insert new user");
 		let user = await db.data.users({ id: 0 }).get();
+		console.log(user)
 		success = await db.data
 			.users({ id: 0 })
 			.roles.push({ type: "admin", name: "hey", permissions: 2, users: [1, 2, 3, 4] });

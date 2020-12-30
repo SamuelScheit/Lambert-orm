@@ -21,6 +21,7 @@ export declare class MongoDatabase implements Database {
 export declare class MongodbProviderCache extends ProviderCache {
     provider: MongodbProvider;
     private changeStream?;
+    static CHANGE_STREAM_SUPPORTED: boolean;
     constructor(provider: MongodbProvider, opts?: ProviderCacheOptions);
     init(): Promise<void>;
     update: (e: any) => void;

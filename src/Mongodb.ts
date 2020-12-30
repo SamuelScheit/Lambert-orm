@@ -46,10 +46,12 @@ export class MongoDatabase implements Database {
 			});
 			this.uri = await this.mongod?.getUri();
 		}
-		this.mongoConnection = await mongoose.createConnection(<string>this.uri, {
+		let options = {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
-		});
+		};
+
+		this.mongoConnection = await mongoose.createConnection(<string>this.uri, options);
 		this.mongoConnection.on("error", console.error);
 	}
 
@@ -60,6 +62,7 @@ export class MongoDatabase implements Database {
 
 export class MongodbProviderCache extends ProviderCache {
 	private changeStream?: ChangeStream;
+	public static CHANGE_STREAM_SUPPORTED: boolean = true;
 
 	constructor(public provider: MongodbProvider, opts?: ProviderCacheOptions) {
 		// @ts-ignore
@@ -67,6 +70,8 @@ export class MongodbProviderCache extends ProviderCache {
 	}
 
 	async init() {
+		if (!MongodbProviderCache.CHANGE_STREAM_SUPPORTED) return;
+
 		try {
 			await new Promise((resolve, reject) => {
 				this.changeStream = this.provider.collection.watch(this.provider.pipe);
@@ -77,7 +82,8 @@ export class MongodbProviderCache extends ProviderCache {
 				this.changeStream.on("change", this.update);
 			});
 		} catch (error) {
-			console.error("change streams are not supported", error);
+			MongodbProviderCache.CHANGE_STREAM_SUPPORTED = false;
+			console.error("change streams are not supported");
 		}
 		return super.init();
 	}
@@ -241,7 +247,7 @@ export class MongodbProvider extends Provider {
 
 			// if (this.pipe.last()["$match"] && this.pipe.length > 1)
 			// 	this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to properly get the element if last pipe operator was an array filter
-			var result = await this.collection.aggregate(this.pipe).toArray();
+			let result = await this.collection.aggregate(this.pipe).toArray();
 			if (result && result.length) {
 				if (result.length === 1) return lastProp ? result[0][lastProp] : result[0];
 				else return result;
@@ -249,10 +255,16 @@ export class MongodbProvider extends Provider {
 			return undefined;
 		}
 
-		return this.collection
+		let result = await this.collection
 			.find({})
 			.project(<any>projection)
 			.toArray();
+
+		if (result && result.length) {
+			if (result.length === 1) return result[0];
+			else return result;
+		}
+		return undefined;
 	}
 
 	set(value: any): any {
