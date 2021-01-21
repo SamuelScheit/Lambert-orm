@@ -116,7 +116,7 @@ function decycle(obj: any, stack = []): any {
 export class MongodbProvider extends Provider {
 	public collection: Collection;
 	public pipe: any[] = [];
-	public document?: any = {};
+	public document?: any;
 	public subpath?: string;
 	public updatepath?: string;
 	public options: any = {};
@@ -255,7 +255,7 @@ export class MongodbProvider extends Provider {
 		}
 
 		let result = await this.collection
-			.find(this.document)
+			.find(this.document || {})
 			.project(<any>projection)
 			.toArray();
 
