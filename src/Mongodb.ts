@@ -259,6 +259,14 @@ export class MongodbProvider extends Provider {
 			.project(<any>projection)
 			.toArray();
 
+		if (this.document) {
+			if (result && result.length) {
+				if (result.length === 1) return result[0];
+				else return result;
+			}
+			return undefined;
+		}
+
 		return result;
 	}
 
