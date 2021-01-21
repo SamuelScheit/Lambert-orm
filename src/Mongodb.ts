@@ -116,7 +116,7 @@ function decycle(obj: any, stack = []): any {
 export class MongodbProvider extends Provider {
 	public collection: Collection;
 	public pipe: any[] = [];
-	public document?: any;
+	public document?: any = {};
 	public subpath?: string;
 	public updatepath?: string;
 	public options: any = {};
@@ -136,10 +136,9 @@ export class MongodbProvider extends Provider {
 			collection.filter = { $where: collection.filter.toString() };
 			this.document = collection.filter;
 		} else if (typeof collection.filter == "object" && collection.filter) {
-			this.document = collection.filter;
-
 			// @ts-ignore
 			if (collection.filter?._id) collection.filter._id = mongoose.Types.ObjectId(collection.filter._id);
+			this.document = collection.filter;
 
 			collection.filter = { $match: collection.filter };
 		}
@@ -256,7 +255,7 @@ export class MongodbProvider extends Provider {
 		}
 
 		let result = await this.collection
-			.find({})
+			.find(this.document)
 			.project(<any>projection)
 			.toArray();
 
