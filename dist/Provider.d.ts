@@ -76,5 +76,5 @@ export declare abstract class Provider {
     last(): any;
     random(): any;
     __getProvider(): this;
-    cache: ProviderCache;
+    cache(): ProviderCache;
 }

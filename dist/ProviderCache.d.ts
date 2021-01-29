@@ -8,7 +8,7 @@ export declare class ProviderCache extends EventEmitter {
     private cache;
     private timeout;
     constructor(provider: Provider, opts?: ProviderCacheOptions | undefined);
-    init(): Promise<void>;
+    init(): Promise<ProviderCache>;
     delete(): any;
     set(value: any): any;
     get(): any;

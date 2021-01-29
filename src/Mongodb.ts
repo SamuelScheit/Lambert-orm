@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose, { Collection, Connection, Types } from "mongoose";
-import { ChangeStream } from "mongodb";
+import { ChangeEvent, ChangeStream } from "mongodb";
 import { Projection, Provider } from "./Provider";
 import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
 import { Database } from "./Database";
@@ -17,19 +17,23 @@ declare global {
 	}
 }
 
-export class MongoDatabase implements Database {
+export class MongoDatabase extends Database {
 	private mongod?: MongoMemoryServer;
 	public mongoConnection?: Connection;
 	public provider = MongodbProvider;
 
-	constructor(private uri?: string) {}
+	constructor(private uri?: string) {
+		super();
+	}
 
+	// @ts-ignore
 	get data(): DatastoreInterface {
 		return Datastore(this);
 	}
 
 	async init() {
-		if (!this.uri) {
+		let localServer = !this.uri;
+		if (localServer) {
 			const dbPath = `${__dirname}/../database/`;
 
 			if (!fs.existsSync(dbPath)) fs.mkdirSync(dbPath);
@@ -38,26 +42,40 @@ export class MongoDatabase implements Database {
 					dbName: "lambert",
 					dbPath,
 					storageEngine: "wiredTiger",
+					replSet: "test",
 					auth: false,
 					args: [],
 					port: 54618,
 				},
 				autoStart: true,
 			});
-			this.uri = await this.mongod?.getUri();
+			this.uri = `${await this.mongod?.getUri()}`;
+			console.log(this.uri);
 		}
 		let options = {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 		};
 
+		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
+
 		this.mongoConnection = await mongoose.createConnection(<string>this.uri, options);
 		this.mongoConnection.on("error", console.error);
+
+		if (localServer) {
+			try {
+				await this.mongoConnection.db.admin().command({ replSetInitiate: { _id: "test" } });
+			} catch (error) {}
+		}
 	}
 
 	async destroy() {
 		await Promise.all([this.mongoConnection?.close(), this.mongod?.stop()]);
 	}
+}
+
+export interface MongodbProviderCache {
+	on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
 
 export class MongodbProviderCache extends ProviderCache {
@@ -69,8 +87,8 @@ export class MongodbProviderCache extends ProviderCache {
 		super(provider, opts);
 	}
 
-	async init() {
-		if (!MongodbProviderCache.CHANGE_STREAM_SUPPORTED) return;
+	async init(): Promise<MongodbProviderCache> {
+		if (!MongodbProviderCache.CHANGE_STREAM_SUPPORTED) throw new Error("Change Streams are not supported");
 
 		try {
 			await new Promise((resolve, reject) => {
@@ -78,18 +96,19 @@ export class MongodbProviderCache extends ProviderCache {
 				this.changeStream.once("error", reject);
 				this.changeStream.once("close", reject);
 				this.changeStream.once("end", reject);
-				// this.changeStream.once("resumeTokenChanged", resolve);
+				this.changeStream.once("resumeTokenChanged", resolve);
 				this.changeStream.on("change", this.update);
 			});
 		} catch (error) {
 			MongodbProviderCache.CHANGE_STREAM_SUPPORTED = false;
 			console.error("change streams are not supported");
 		}
-		return super.init();
+		await super.init();
+		return this;
 	}
 
-	update = (e: any) => {
-		console.log("changestream", this, e);
+	update = (data: ChangeEvent<Record<string, any>>) => {
+		this.emit("change", data);
 	};
 
 	async destroy() {
@@ -122,13 +141,13 @@ export class MongodbProvider extends Provider {
 	public options: any = {};
 	public arrayFilters: any[] = [];
 
-	// @ts-ignore
-	public get cache() {
+	public cache() {
 		return new MongodbProviderCache(this);
 	}
 
 	constructor(protected db: MongoDatabase, protected path: DatastoreProxyPath) {
 		super(db, path);
+		if (!path.length) throw new Error("Path must contain at least one element");
 		const collection = path[0];
 
 		if (typeof collection.filter == "function" || typeof collection.filter == "string") {
@@ -333,6 +352,7 @@ export class MongodbProvider extends Provider {
 
 	pull() {
 		if (this.subpath) {
+			// @ts-ignore
 			var { filter } = this.path.last();
 			if (!filter) throw "the last property must specify a filter";
 			return this.checkIfModified(
@@ -350,6 +370,7 @@ export class MongodbProvider extends Provider {
 
 	async first() {
 		if (this.subpath) {
+			// @ts-ignore
 			var { name } = this.path.last();
 
 			var result = await this.collection
@@ -377,6 +398,7 @@ export class MongodbProvider extends Provider {
 
 	async random() {
 		if (this.subpath) {
+			// @ts-ignore
 			var { name } = this.path.last();
 
 			var result = await this.collection

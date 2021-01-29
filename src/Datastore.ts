@@ -2,7 +2,7 @@ import { Database } from "./Database";
 import { Provider } from "./Provider";
 
 const noop = () => {};
-const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random", "__getProvider"];
+const methods = ["delete", "set", "get", "exists", "push", "first", "last", "random", "cache", "__getProvider"];
 const reflectors = [
 	"toString",
 	"valueOf",
@@ -14,7 +14,7 @@ const reflectors = [
 
 export type DatastoreProxyPath = { name: string; filter?: any }[];
 
-type Methods = "delete" | "set" | "get" | "exists" | "push" | "first" | "last" | "random" | "__getProvider";
+type Methods = "delete" | "set" | "get" | "exists" | "push" | "first" | "last" | "random" | "cache" | "__getProvider";
 
 export interface DatastoreInterface {
 	[key: string]: DatastoreInterface & Provider & { (...args: any[]): any };

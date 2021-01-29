@@ -87,5 +87,7 @@ export abstract class Provider {
 		return this;
 	}
 
-	cache: ProviderCache;
+	cache(): ProviderCache {
+		throw new Error("not implemented");
+	}
 }

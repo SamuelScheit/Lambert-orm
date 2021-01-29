@@ -10,8 +10,9 @@ export class ProviderCache extends EventEmitter {
 		super();
 	}
 
-	async init() {
+	async init(): Promise<ProviderCache> {
 		this.cache = await this.provider.get();
+		return this;
 	}
 
 	delete() {
