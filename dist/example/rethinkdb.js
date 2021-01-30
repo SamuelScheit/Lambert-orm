@@ -9,15 +9,15 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Database = void 0;
-const events_1 = require("events");
-class Database extends events_1.EventEmitter {
-    init() {
-        return __awaiter(this, void 0, void 0, function* () { });
-    }
-    destroy() {
-        return __awaiter(this, void 0, void 0, function* () { });
-    }
-}
-exports.Database = Database;
-//# sourceMappingURL=Database.js.map
+process.on("unhandledRejection", console.error);
+process.on("uncaughtException", console.error);
+const Rethinkdb_1 = require("../Rethinkdb");
+const db = new Rethinkdb_1.RethinkDatabase({ host: "localhost", db: "test", port: 28015 });
+// db.init().then(() => test(db));
+db.init().then(() => __awaiter(void 0, void 0, void 0, function* () {
+    let success = yield db.data.users({ id: 0 }).set({ users: null });
+    console.log({ success });
+    let res = yield db.data.users.get();
+    console.log(res);
+}));
+//# sourceMappingURL=rethinkdb.js.map

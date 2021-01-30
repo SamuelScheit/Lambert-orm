@@ -1,10 +1,11 @@
+import "missing-native-js-functions";
 import { Provider } from "./Provider";
 import { EventEmitter } from "events";
 
 export type ProviderCacheOptions = {};
 
 export class ProviderCache extends EventEmitter {
-	private cache: any;
+	public cache: any;
 	private timeout: NodeJS.Timeout;
 	constructor(public provider: Provider, private opts?: ProviderCacheOptions) {
 		super();
@@ -20,7 +21,7 @@ export class ProviderCache extends EventEmitter {
 		return this.provider.delete();
 	}
 	set(value: any) {
-		this.cache = value;
+		this.cache = value.merge(this.cache);
 		return this.provider.set(value);
 	}
 	get() {

@@ -10,7 +10,7 @@ declare global {
     }
 }
 export declare class MongoDatabase extends Database {
-    private uri?;
+    uri?: string | undefined;
     private mongod?;
     mongoConnection?: Connection;
     provider: typeof MongodbProvider;

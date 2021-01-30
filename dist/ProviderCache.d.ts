@@ -1,11 +1,12 @@
 /// <reference types="node" />
+import "missing-native-js-functions";
 import { Provider } from "./Provider";
 import { EventEmitter } from "events";
 export declare type ProviderCacheOptions = {};
 export declare class ProviderCache extends EventEmitter {
     provider: Provider;
     private opts?;
-    private cache;
+    cache: any;
     private timeout;
     constructor(provider: Provider, opts?: ProviderCacheOptions | undefined);
     init(): Promise<ProviderCache>;

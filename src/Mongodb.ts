@@ -22,7 +22,7 @@ export class MongoDatabase extends Database {
 	public mongoConnection?: Connection;
 	public provider = MongodbProvider;
 
-	constructor(private uri?: string) {
+	constructor(public uri?: string) {
 		super();
 	}
 
@@ -47,14 +47,14 @@ export class MongoDatabase extends Database {
 					args: [],
 					port: 54618,
 				},
-				autoStart: true,
 			});
+			await this.mongod.start();
 			this.uri = `${await this.mongod?.getUri()}`;
 			console.log(this.uri);
 		}
 		let options = {
 			useNewUrlParser: true,
-			useUnifiedTopology: true,
+			useUnifiedTopology: false,
 		};
 
 		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
@@ -108,6 +108,7 @@ export class MongodbProviderCache extends ProviderCache {
 	}
 
 	update = (data: ChangeEvent<Record<string, any>>) => {
+		// TODO: update internal cache object
 		this.emit("change", data);
 	};
 
@@ -294,7 +295,7 @@ export class MongodbProvider extends Provider {
 		if (this.updatepath) {
 			return this.checkIfModified(
 				this.collection.updateOne(
-					this.document,
+					this.document || {},
 					{ $set: { [this.updatepath]: value } },
 					{ ...this.options, arrayFilters: this.arrayFilters }
 				)
