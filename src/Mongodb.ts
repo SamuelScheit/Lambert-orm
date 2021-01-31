@@ -19,7 +19,7 @@ declare global {
 
 export class MongoDatabase extends Database {
 	private mongod?: MongoMemoryServer;
-	public mongoConnection?: Connection;
+	public conn: Connection;
 	public provider = MongodbProvider;
 
 	constructor(public uri?: string) {
@@ -58,18 +58,18 @@ export class MongoDatabase extends Database {
 
 		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
 
-		this.mongoConnection = await mongoose.createConnection(<string>this.uri, options);
-		this.mongoConnection.on("error", console.error);
+		this.conn = await mongoose.createConnection(<string>this.uri, options);
+		this.conn.on("error", console.error);
 
 		if (localServer) {
 			try {
-				await this.mongoConnection.db.admin().command({ replSetInitiate: { _id: "test" } });
+				await this.conn.db.admin().command({ replSetInitiate: { _id: "test" } });
 			} catch (error) {}
 		}
 	}
 
 	async destroy() {
-		await Promise.all([this.mongoConnection?.close(), this.mongod?.stop()]);
+		await Promise.all([this.conn?.close(), this.mongod?.stop()]);
 	}
 }
 
@@ -120,6 +120,7 @@ export class MongodbProviderCache extends ProviderCache {
 
 function decycle(obj: any, stack = []): any {
 	if (!obj || typeof obj !== "object") return obj;
+	if (typeof obj === "object" && !Array.isArray(obj) && obj.constructor.name !== "Object") return obj;
 
 	// @ts-ignore
 	if (stack.includes(obj)) return null;
@@ -165,9 +166,9 @@ export class MongodbProvider extends Provider {
 		this.path = path.slice(1);
 		path = this.path;
 
-		if (!db.mongoConnection) throw new Error("Database not connected");
+		if (!db.conn) throw new Error("Database not connected");
 
-		this.collection = db.mongoConnection.collection(collection.name);
+		this.collection = db.conn.collection(collection.name);
 
 		if (path.length) {
 			var pipe: any[] = [];
