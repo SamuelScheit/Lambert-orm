@@ -42,19 +42,18 @@ export class MongoDatabase extends Database {
 					dbName: "lambert",
 					dbPath,
 					storageEngine: "wiredTiger",
-					replSet: "test",
 					auth: false,
 					args: [],
 					port: 54618,
 				},
 			});
 			await this.mongod.start();
-			this.uri = `${await this.mongod?.getUri()}`;
+			this.uri = await this.mongod?.getUri();
 			console.log(this.uri);
 		}
 		let options = {
 			useNewUrlParser: true,
-			useUnifiedTopology: false,
+			useUnifiedTopology: true,
 		};
 
 		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false

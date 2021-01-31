@@ -46,19 +46,18 @@ class MongoDatabase extends Database_1.Database {
                         dbName: "lambert",
                         dbPath,
                         storageEngine: "wiredTiger",
-                        replSet: "test",
                         auth: false,
                         args: [],
                         port: 54618,
                     },
                 });
                 yield this.mongod.start();
-                this.uri = `${yield ((_a = this.mongod) === null || _a === void 0 ? void 0 : _a.getUri())}`;
+                this.uri = yield ((_a = this.mongod) === null || _a === void 0 ? void 0 : _a.getUri());
                 console.log(this.uri);
             }
             let options = {
                 useNewUrlParser: true,
-                useUnifiedTopology: false,
+                useUnifiedTopology: true,
             };
             // mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
             this.mongoConnection = yield mongoose_1.default.createConnection(this.uri, options);
