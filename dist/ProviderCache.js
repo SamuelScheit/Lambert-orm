@@ -29,7 +29,7 @@ class ProviderCache extends events_1.EventEmitter {
         return this.provider.delete();
     }
     set(value) {
-        this.cache = value.merge(this.cache);
+        this.cache = value.merge(this.cache || {});
         return this.provider.set(value);
     }
     get() {

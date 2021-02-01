@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose, { Collection, Connection, Types } from "mongoose";
-import { ChangeEvent, ChangeStream } from "mongodb";
+import { ChangeEvent, ChangeStream, Long } from "mongodb";
 import { Projection, Provider } from "./Provider";
 import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
 import { Database } from "./Database";
@@ -119,6 +119,7 @@ export class MongodbProviderCache extends ProviderCache {
 }
 
 function decycle(obj: any, stack = []): any {
+	if (typeof obj === "bigint") return Long.fromString(obj.toString());
 	if (!obj || typeof obj !== "object") return obj;
 	if (typeof obj === "object" && !Array.isArray(obj) && obj.constructor.name !== "Object") return obj;
 
