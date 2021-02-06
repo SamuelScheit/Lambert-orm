@@ -84,6 +84,7 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
         // @ts-ignore
         super(provider, opts);
         this.provider = provider;
+        this.opts = opts;
         this.update = (data) => {
             // TODO: update internal cache object
             this.emit("change", data);
@@ -93,6 +94,7 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
         const _super = Object.create(null, {
             init: { get: () => super.init }
         });
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (!MongodbProviderCache.CHANGE_STREAM_SUPPORTED)
                 throw new Error("Change Streams are not supported");
@@ -110,7 +112,9 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
                 MongodbProviderCache.CHANGE_STREAM_SUPPORTED = false;
                 console.error("change streams are not supported");
             }
-            yield _super.init.call(this);
+            if (!((_a = this.opts) === null || _a === void 0 ? void 0 : _a.onlyEvents)) {
+                yield _super.init.call(this);
+            }
             return this;
         });
     }
@@ -203,8 +207,8 @@ class MongodbProvider extends Provider_1.Provider {
         }
         this.options.upsert = true;
     }
-    cache() {
-        return new MongodbProviderCache(this);
+    cache(opts) {
+        return new MongodbProviderCache(this, opts);
     }
     convertFilterToQuery(obj) {
         if (!obj)

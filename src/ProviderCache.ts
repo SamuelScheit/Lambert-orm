@@ -7,7 +7,7 @@ export type ProviderCacheOptions = {};
 export class ProviderCache extends EventEmitter {
 	public cache: any;
 	private timeout: NodeJS.Timeout;
-	constructor(public provider: Provider, private opts?: ProviderCacheOptions) {
+	constructor(public provider: Provider, public opts?: ProviderCacheOptions) {
 		super();
 	}
 

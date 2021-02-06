@@ -1,7 +1,7 @@
 import { Collection, Connection } from "mongoose";
 import { ChangeEvent } from "mongodb";
 import { Projection, Provider } from "./Provider";
-import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
+import { ProviderCache } from "./ProviderCache";
 import { Database } from "./Database";
 import { DatastoreInterface, DatastoreProxyPath } from "./Datastore";
 declare global {
@@ -22,11 +22,15 @@ export declare class MongoDatabase extends Database {
 export interface MongodbProviderCache {
     on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
+interface MongodbProviderCacheOptions {
+    onlyEvents: boolean;
+}
 export declare class MongodbProviderCache extends ProviderCache {
     provider: MongodbProvider;
+    opts?: MongodbProviderCacheOptions | undefined;
     private changeStream?;
     static CHANGE_STREAM_SUPPORTED: boolean;
-    constructor(provider: MongodbProvider, opts?: ProviderCacheOptions);
+    constructor(provider: MongodbProvider, opts?: MongodbProviderCacheOptions | undefined);
     init(): Promise<MongodbProviderCache>;
     update: (data: ChangeEvent<Record<string, any>>) => void;
     destroy(): Promise<void>;
@@ -41,7 +45,7 @@ export declare class MongodbProvider extends Provider {
     updatepath?: string;
     options: any;
     arrayFilters: any[];
-    cache(): MongodbProviderCache;
+    cache(opts?: MongodbProviderCacheOptions): MongodbProviderCache;
     constructor(db: MongoDatabase, path: DatastoreProxyPath);
     convertFilterToQuery(obj: any): any;
     delete(): Promise<void> | Promise<boolean> | Promise<import("mongodb").DeleteWriteOpResultObject>;
@@ -57,3 +61,4 @@ export declare class MongodbProvider extends Provider {
     random(): Promise<any>;
     __getProvider(): this;
 }
+export {};

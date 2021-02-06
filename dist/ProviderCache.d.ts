@@ -5,7 +5,7 @@ import { EventEmitter } from "events";
 export declare type ProviderCacheOptions = {};
 export declare class ProviderCache extends EventEmitter {
     provider: Provider;
-    private opts?;
+    opts?: ProviderCacheOptions | undefined;
     cache: any;
     private timeout;
     constructor(provider: Provider, opts?: ProviderCacheOptions | undefined);

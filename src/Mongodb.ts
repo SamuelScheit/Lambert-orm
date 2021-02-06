@@ -77,11 +77,15 @@ export interface MongodbProviderCache {
 	on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
 
+interface MongodbProviderCacheOptions {
+	onlyEvents: boolean;
+}
+
 export class MongodbProviderCache extends ProviderCache {
 	private changeStream?: ChangeStream;
 	public static CHANGE_STREAM_SUPPORTED: boolean = true;
 
-	constructor(public provider: MongodbProvider, opts?: ProviderCacheOptions) {
+	constructor(public provider: MongodbProvider, public opts?: MongodbProviderCacheOptions) {
 		// @ts-ignore
 		super(provider, opts);
 	}
@@ -102,7 +106,9 @@ export class MongodbProviderCache extends ProviderCache {
 			MongodbProviderCache.CHANGE_STREAM_SUPPORTED = false;
 			console.error("change streams are not supported");
 		}
-		await super.init();
+		if (!this.opts?.onlyEvents) {
+			await super.init();
+		}
 		return this;
 	}
 
@@ -143,8 +149,8 @@ export class MongodbProvider extends Provider {
 	public options: any = {};
 	public arrayFilters: any[] = [];
 
-	public cache() {
-		return new MongodbProviderCache(this);
+	public cache(opts?: MongodbProviderCacheOptions) {
+		return new MongodbProviderCache(this, opts);
 	}
 
 	constructor(protected db: MongoDatabase, protected path: DatastoreProxyPath) {
