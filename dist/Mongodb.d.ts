@@ -11,10 +11,17 @@ declare global {
 }
 export declare class MongoDatabase extends Database {
     uri?: string | undefined;
+    opts?: {
+        useNewUrlParser: boolean;
+        useUnifiedTopology: boolean;
+    } | undefined;
     private mongod?;
     conn: Connection;
     provider: typeof MongodbProvider;
-    constructor(uri?: string | undefined);
+    constructor(uri?: string | undefined, opts?: {
+        useNewUrlParser: boolean;
+        useUnifiedTopology: boolean;
+    } | undefined);
     get data(): DatastoreInterface;
     init(): Promise<void>;
     destroy(): Promise<void>;

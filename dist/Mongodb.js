@@ -25,9 +25,10 @@ Array.prototype.last = function () {
     return this[this.length - 1];
 };
 class MongoDatabase extends Database_1.Database {
-    constructor(uri) {
+    constructor(uri, opts) {
         super();
         this.uri = uri;
+        this.opts = opts;
         this.provider = MongodbProvider;
     }
     // @ts-ignore
@@ -56,12 +57,8 @@ class MongoDatabase extends Database_1.Database {
                 this.uri = yield ((_a = this.mongod) === null || _a === void 0 ? void 0 : _a.getUri());
                 console.log(this.uri);
             }
-            let options = {
-                useNewUrlParser: true,
-                useUnifiedTopology: true,
-            };
             // mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
-            this.conn = yield mongoose_1.default.createConnection(this.uri, options);
+            this.conn = yield mongoose_1.default.createConnection(this.uri, this.opts);
             this.conn.on("error", console.error);
             if (localServer) {
                 try {

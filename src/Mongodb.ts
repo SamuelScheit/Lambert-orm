@@ -22,7 +22,13 @@ export class MongoDatabase extends Database {
 	public conn: Connection;
 	public provider = MongodbProvider;
 
-	constructor(public uri?: string) {
+	constructor(
+		public uri?: string,
+		public opts?: {
+			useNewUrlParser: boolean;
+			useUnifiedTopology: boolean;
+		}
+	) {
 		super();
 	}
 
@@ -51,14 +57,10 @@ export class MongoDatabase extends Database {
 			this.uri = await this.mongod?.getUri();
 			console.log(this.uri);
 		}
-		let options = {
-			useNewUrlParser: true,
-			useUnifiedTopology: true,
-		};
 
 		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
 
-		this.conn = await mongoose.createConnection(<string>this.uri, options);
+		this.conn = await mongoose.createConnection(<string>this.uri, this.opts);
 		this.conn.on("error", console.error);
 
 		if (localServer) {
