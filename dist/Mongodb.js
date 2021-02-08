@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongodbProvider = exports.MongodbProviderCache = exports.MongoDatabase = void 0;
+require("missing-native-js-functions");
 const mongodb_memory_server_1 = require("mongodb-memory-server");
 const mongoose_1 = __importDefault(require("mongoose"));
 const mongodb_1 = require("mongodb");
@@ -83,7 +84,37 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
         this.provider = provider;
         this.opts = opts;
         this.update = (data) => {
-            // TODO: update internal cache object
+            const old = Object.assign({}, data);
+            switch (data.operationType) {
+                case "insert":
+                    this.cache = data.documentKey.merge(this.cache);
+                    break;
+                case "update":
+                    // ? if there are problems/data inconsistency -> use fullDocument: true and just set the complete object
+                    if (Array.isArray(data.updateDescription.removedFields)) {
+                        for (const key of data.updateDescription.removedFields) {
+                            delete this.cache[key];
+                        }
+                    }
+                    this.cache = data.updateDescription.updatedFields.merge(this.cache);
+                    break;
+                case "replace":
+                    this.cache = data.fullDocument;
+                    break;
+                case "invalidate":
+                    break;
+                case "delete":
+                case "drop":
+                case "dropDatabase":
+                    this.cache = undefined;
+                    break;
+                case "rename":
+                    // rename collection -> update nothing
+                    break;
+                case "invalidate":
+                    return this.destroy();
+            }
+            this.emit("update", old, this.cache);
             this.emit("change", data);
         };
     }

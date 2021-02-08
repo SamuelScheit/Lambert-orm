@@ -1,3 +1,4 @@
+import "missing-native-js-functions";
 import { Collection, Connection } from "mongoose";
 import { ChangeEvent } from "mongodb";
 import { Projection, Provider } from "./Provider";
@@ -27,6 +28,7 @@ export declare class MongoDatabase extends Database {
     destroy(): Promise<void>;
 }
 export interface MongodbProviderCache {
+    on(event: "update", listener: (old: any, newdata: any) => void): this;
     on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
 interface MongodbProviderCacheOptions {
@@ -39,7 +41,7 @@ export declare class MongodbProviderCache extends ProviderCache {
     static CHANGE_STREAM_SUPPORTED: boolean;
     constructor(provider: MongodbProvider, opts?: MongodbProviderCacheOptions | undefined);
     init(): Promise<MongodbProviderCache>;
-    update: (data: ChangeEvent<Record<string, any>>) => void;
+    update: (data: ChangeEvent<Record<string, any>>) => Promise<void> | undefined;
     destroy(): Promise<void>;
 }
 export declare class MongodbProvider extends Provider {

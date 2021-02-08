@@ -1,3 +1,4 @@
+import "missing-native-js-functions";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose, { Collection, Connection, Types } from "mongoose";
 import { ChangeEvent, ChangeStream, Long } from "mongodb";
@@ -76,6 +77,7 @@ export class MongoDatabase extends Database {
 }
 
 export interface MongodbProviderCache {
+	on(event: "update", listener: (old: any, newdata: any) => void): this;
 	on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
 
@@ -115,7 +117,42 @@ export class MongodbProviderCache extends ProviderCache {
 	}
 
 	update = (data: ChangeEvent<Record<string, any>>) => {
-		// TODO: update internal cache object
+		const old = { ...data };
+
+		switch (data.operationType) {
+			case "insert":
+				this.cache = data.documentKey.merge(this.cache);
+				break;
+			case "update":
+				// ? if there are problems/data inconsistency -> use fullDocument: true and just set the complete object
+
+				if (Array.isArray(data.updateDescription.removedFields)) {
+					for (const key of data.updateDescription.removedFields) {
+						delete this.cache[key];
+					}
+				}
+
+				this.cache = data.updateDescription.updatedFields.merge(this.cache);
+
+				break;
+			case "replace":
+				this.cache = data.fullDocument;
+				break;
+			case "invalidate":
+				break;
+			case "delete":
+			case "drop":
+			case "dropDatabase":
+				this.cache = undefined;
+				break;
+			case "rename":
+				// rename collection -> update nothing
+				break;
+			case "invalidate":
+				return this.destroy();
+		}
+
+		this.emit("update", old, this.cache);
 		this.emit("change", data);
 	};
 
