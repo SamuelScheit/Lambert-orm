@@ -28,6 +28,7 @@ export declare class MongoDatabase extends Database {
     destroy(): Promise<void>;
 }
 export interface MongodbProviderCache {
+    on(event: "insert", listener: (newdata: any) => void): this;
     on(event: "update", listener: (old: any, newdata: any) => void): this;
     on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
@@ -57,6 +58,7 @@ export declare class MongodbProvider extends Provider {
     cache(opts?: MongodbProviderCacheOptions): MongodbProviderCache;
     constructor(db: MongoDatabase, path: DatastoreProxyPath);
     convertFilterToQuery(obj: any): any;
+    convertResult(obj: any): any;
     delete(): Promise<void> | Promise<boolean> | Promise<import("mongodb").DeleteWriteOpResultObject>;
     get(projection?: Projection): Promise<any>;
     set(value: any): any;

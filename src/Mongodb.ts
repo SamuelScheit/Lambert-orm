@@ -77,6 +77,7 @@ export class MongoDatabase extends Database {
 }
 
 export interface MongodbProviderCache {
+	on(event: "insert", listener: (newdata: any) => void): this;
 	on(event: "update", listener: (old: any, newdata: any) => void): this;
 	on(event: "change", listener: (data: ChangeEvent<Record<string, any>>) => void): this;
 }
@@ -121,6 +122,7 @@ export class MongodbProviderCache extends ProviderCache {
 
 		switch (data.operationType) {
 			case "insert":
+				this.emit("insert", data.fullDocument);
 				this.cache = data.documentKey.merge(this.cache);
 				break;
 			case "update":
@@ -286,6 +288,17 @@ export class MongodbProvider extends Provider {
 		return res;
 	}
 
+	convertResult(obj: any) {
+		if (obj instanceof Long) return BigInt(obj.toString());
+		if (typeof obj === "object") {
+			Object.keys(obj).forEach((key) => {
+				obj[key] = this.convertResult(obj[key]);
+			});
+		}
+
+		return obj;
+	}
+
 	delete() {
 		if (this.updatepath) {
 			return this.checkIfModified(
@@ -301,6 +314,7 @@ export class MongodbProvider extends Provider {
 		return this.collection.conn.dropCollection(this.collection.name);
 	}
 
+	// TODO: convert Long Datatype to bigint
 	async get(projection?: Projection) {
 		projection = this.convertFilterToQuery(projection);
 		if (this.pipe.length) {
@@ -314,8 +328,8 @@ export class MongodbProvider extends Provider {
 			// 	this.pipe.push({ $project: { [lastProp]: "$$ROOT" } }); // used to properly get the element if last pipe operator was an array filter
 			let result = await this.collection.aggregate(this.pipe).toArray();
 			if (result && result.length) {
-				if (result.length === 1) return lastProp ? result[0][lastProp] : result[0];
-				else return result;
+				if (result.length === 1) return this.convertResult(lastProp ? result[0][lastProp] : result[0]);
+				else return this.convertResult(result);
 			}
 			return undefined;
 		}
@@ -327,13 +341,13 @@ export class MongodbProvider extends Provider {
 
 		if (this.document) {
 			if (result && result.length) {
-				if (result.length === 1) return result[0];
-				else return result;
+				if (result.length === 1) return this.convertResult(result[0]);
+				else return this.convertResult(result);
 			}
 			return undefined;
 		}
 
-		return result;
+		return this.convertResult(result);
 	}
 
 	set(value: any): any {
@@ -431,16 +445,16 @@ export class MongodbProvider extends Provider {
 			return result && result.length ? result[0] : undefined;
 		}
 
-		return this.collection.findOne({}, { sort: { $natural: 1 } });
+		return await this.collection.findOne({}, { sort: { $natural: 1 } });
 	}
 
-	last() {
+	async last() {
 		if (this.subpath) {
 			// TODO
 			return this.collection.findOne(this.document);
 		}
 
-		return this.collection.findOne({}, { sort: { $natural: -1 } });
+		return await this.collection.findOne({}, { sort: { $natural: -1 } });
 	}
 
 	async random() {
@@ -459,7 +473,7 @@ export class MongodbProvider extends Provider {
 			return result && result.length ? result[0] : undefined;
 		}
 
-		return this.collection.aggregate([{ $sample: { size: 1 } }]);
+		return await this.collection.aggregate([{ $sample: { size: 1 } }]);
 	}
 
 	__getProvider() {

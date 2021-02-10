@@ -10,4 +10,12 @@ import { test } from "./test";
 
 const db: Database = new MongoDatabase();
 
-db.init().then(() => test(db));
+db.init().then(async () => {
+	// @ts-ignore
+	await db.data.test.push({ test: 2398723434058967349872349n });
+	const result = await db.data.test.get();
+
+	console.log(result);
+
+	// return test(db);
+});

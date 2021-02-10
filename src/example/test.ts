@@ -1,4 +1,3 @@
-import { createConnection } from "net";
 import { Database } from "..";
 
 export async function test(db: Database) {

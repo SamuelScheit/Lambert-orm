@@ -87,6 +87,7 @@ class MongodbProviderCache extends ProviderCache_1.ProviderCache {
             const old = Object.assign({}, data);
             switch (data.operationType) {
                 case "insert":
+                    this.emit("insert", data.fullDocument);
                     this.cache = data.documentKey.merge(this.cache);
                     break;
                 case "update":
@@ -273,6 +274,16 @@ class MongodbProvider extends Provider_1.Provider {
         }
         return res;
     }
+    convertResult(obj) {
+        if (obj instanceof mongodb_1.Long)
+            return BigInt(obj.toString());
+        if (typeof obj === "object") {
+            Object.keys(obj).forEach((key) => {
+                obj[key] = this.convertResult(obj[key]);
+            });
+        }
+        return obj;
+    }
     delete() {
         if (this.updatepath) {
             return this.checkIfModified(this.collection.updateOne(this.document, { $unset: { [this.updatepath]: "" } }, Object.assign(Object.assign({}, this.options), { arrayFilters: this.arrayFilters })));
@@ -281,6 +292,7 @@ class MongodbProvider extends Provider_1.Provider {
             return this.collection.deleteOne(this.document);
         return this.collection.conn.dropCollection(this.collection.name);
     }
+    // TODO: convert Long Datatype to bigint
     get(projection) {
         return __awaiter(this, void 0, void 0, function* () {
             projection = this.convertFilterToQuery(projection);
@@ -297,9 +309,9 @@ class MongodbProvider extends Provider_1.Provider {
                 let result = yield this.collection.aggregate(this.pipe).toArray();
                 if (result && result.length) {
                     if (result.length === 1)
-                        return lastProp ? result[0][lastProp] : result[0];
+                        return this.convertResult(lastProp ? result[0][lastProp] : result[0]);
                     else
-                        return result;
+                        return this.convertResult(result);
                 }
                 return undefined;
             }
@@ -310,13 +322,13 @@ class MongodbProvider extends Provider_1.Provider {
             if (this.document) {
                 if (result && result.length) {
                     if (result.length === 1)
-                        return result[0];
+                        return this.convertResult(result[0]);
                     else
-                        return result;
+                        return this.convertResult(result);
                 }
                 return undefined;
             }
-            return result;
+            return this.convertResult(result);
         });
     }
     set(value) {
@@ -396,15 +408,17 @@ class MongodbProvider extends Provider_1.Provider {
                     .toArray();
                 return result && result.length ? result[0] : undefined;
             }
-            return this.collection.findOne({}, { sort: { $natural: 1 } });
+            return yield this.collection.findOne({}, { sort: { $natural: 1 } });
         });
     }
     last() {
-        if (this.subpath) {
-            // TODO
-            return this.collection.findOne(this.document);
-        }
-        return this.collection.findOne({}, { sort: { $natural: -1 } });
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.subpath) {
+                // TODO
+                return this.collection.findOne(this.document);
+            }
+            return yield this.collection.findOne({}, { sort: { $natural: -1 } });
+        });
     }
     random() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -421,7 +435,7 @@ class MongodbProvider extends Provider_1.Provider {
                     .toArray();
                 return result && result.length ? result[0] : undefined;
             }
-            return this.collection.aggregate([{ $sample: { size: 1 } }]);
+            return yield this.collection.aggregate([{ $sample: { size: 1 } }]);
         });
     }
     __getProvider() {
