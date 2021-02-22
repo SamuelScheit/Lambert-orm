@@ -290,7 +290,7 @@ export class MongodbProvider extends Provider {
 
 	convertResult(obj: any) {
 		if (obj instanceof Long) return BigInt(obj.toString());
-		if (typeof obj === "object") {
+		if (typeof obj === "object" && obj != null) {
 			Object.keys(obj).forEach((key) => {
 				obj[key] = this.convertResult(obj[key]);
 			});

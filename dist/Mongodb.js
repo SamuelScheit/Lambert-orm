@@ -277,7 +277,7 @@ class MongodbProvider extends Provider_1.Provider {
     convertResult(obj) {
         if (obj instanceof mongodb_1.Long)
             return BigInt(obj.toString());
-        if (typeof obj === "object") {
+        if (typeof obj === "object" && obj != null) {
             Object.keys(obj).forEach((key) => {
                 obj[key] = this.convertResult(obj[key]);
             });
