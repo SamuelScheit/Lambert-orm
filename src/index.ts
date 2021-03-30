@@ -1,7 +1,5 @@
-import { Datastore } from "./Datastore";
-import { Database } from "./Database";
-import { MongoDatabase } from "./Mongodb";
-import { ProviderCache } from "./ProviderCache";
-import { Provider } from "./Provider";
-
-export { Datastore, MongoDatabase, ProviderCache, Provider, Database };
+export * from "./Database";
+export * from "./Datastore";
+export * from "./Mongodb";
+export * from "./Provider";
+export * from "./ProviderCache";
