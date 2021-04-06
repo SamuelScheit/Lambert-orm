@@ -1,11 +1,9 @@
 import "missing-native-js-functions";
-import { MongoMemoryServer } from "mongodb-memory-server";
 import mongoose, { Collection, Connection, Types } from "mongoose";
 import { ChangeEvent, ChangeStream, Long } from "mongodb";
 import { Projection, Provider } from "./Provider";
-import { ProviderCache, ProviderCacheOptions } from "./ProviderCache";
+import { ProviderCache } from "./ProviderCache";
 import { Database } from "./Database";
-import fs from "fs";
 import { Datastore, DatastoreInterface, DatastoreProxyPath } from "./Datastore";
 
 Array.prototype.last = function () {
@@ -19,7 +17,6 @@ declare global {
 }
 
 export class MongoDatabase extends Database {
-	private mongod?: MongoMemoryServer;
 	public conn: Connection;
 	public provider = MongodbProvider;
 
@@ -39,40 +36,18 @@ export class MongoDatabase extends Database {
 	}
 
 	async init() {
-		let localServer = !this.uri;
-		if (localServer) {
-			const dbPath = `${__dirname}/../database/`;
-
-			if (!fs.existsSync(dbPath)) fs.mkdirSync(dbPath);
-			this.mongod = new MongoMemoryServer({
-				instance: {
-					dbName: "lambert",
-					dbPath,
-					storageEngine: "wiredTiger",
-					auth: false,
-					args: [],
-					port: 54618,
-				},
-			});
-			await this.mongod.start();
-			this.uri = await this.mongod?.getUri();
-			console.log(this.uri);
+		if (!this.uri) {
+			return console.log("you didn't specify any mongodb uri");
 		}
 
 		// mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
 
 		this.conn = await mongoose.createConnection(<string>this.uri, this.opts);
 		this.conn.on("error", console.error);
-
-		if (localServer) {
-			try {
-				await this.conn.db.admin().command({ replSetInitiate: { _id: "test" } });
-			} catch (error) {}
-		}
 	}
 
 	async destroy() {
-		await Promise.all([this.conn?.close(), this.mongod?.stop()]);
+		await Promise.all([this.conn?.close()]);
 	}
 }
 
