@@ -14,13 +14,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MongodbProvider = exports.MongodbProviderCache = exports.MongoDatabase = void 0;
 require("missing-native-js-functions");
-const mongodb_memory_server_1 = require("mongodb-memory-server");
 const mongoose_1 = __importDefault(require("mongoose"));
 const mongodb_1 = require("mongodb");
 const Provider_1 = require("./Provider");
 const ProviderCache_1 = require("./ProviderCache");
 const Database_1 = require("./Database");
-const fs_1 = __importDefault(require("fs"));
 const Datastore_1 = require("./Datastore");
 Array.prototype.last = function () {
     return this[this.length - 1];
@@ -37,42 +35,19 @@ class MongoDatabase extends Database_1.Database {
         return Datastore_1.Datastore(this);
     }
     init() {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            let localServer = !this.uri;
-            if (localServer) {
-                const dbPath = `${__dirname}/../database/`;
-                if (!fs_1.default.existsSync(dbPath))
-                    fs_1.default.mkdirSync(dbPath);
-                this.mongod = new mongodb_memory_server_1.MongoMemoryServer({
-                    instance: {
-                        dbName: "lambert",
-                        dbPath,
-                        storageEngine: "wiredTiger",
-                        auth: false,
-                        args: [],
-                        port: 54618,
-                    },
-                });
-                yield this.mongod.start();
-                this.uri = yield ((_a = this.mongod) === null || _a === void 0 ? void 0 : _a.getUri());
-                console.log(this.uri);
+            if (!this.uri) {
+                return console.log("you didn't specify any mongodb uri");
             }
             // mongodb://127.0.0.1:54618/lambert?readPreference=primaryPreferred&appname=MongoDB%20Compass&ssl=false
             this.conn = yield mongoose_1.default.createConnection(this.uri, this.opts);
             this.conn.on("error", console.error);
-            if (localServer) {
-                try {
-                    yield this.conn.db.admin().command({ replSetInitiate: { _id: "test" } });
-                }
-                catch (error) { }
-            }
         });
     }
     destroy() {
-        var _a, _b;
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            yield Promise.all([(_a = this.conn) === null || _a === void 0 ? void 0 : _a.close(), (_b = this.mongod) === null || _b === void 0 ? void 0 : _b.stop()]);
+            yield Promise.all([(_a = this.conn) === null || _a === void 0 ? void 0 : _a.close()]);
         });
     }
 }

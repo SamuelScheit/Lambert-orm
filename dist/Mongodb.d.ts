@@ -16,7 +16,6 @@ export declare class MongoDatabase extends Database {
         useNewUrlParser: boolean;
         useUnifiedTopology: boolean;
     } | undefined;
-    private mongod?;
     conn: Connection;
     provider: typeof MongodbProvider;
     constructor(uri?: string | undefined, opts?: {
