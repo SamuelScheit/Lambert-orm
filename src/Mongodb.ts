@@ -1,6 +1,6 @@
 import "missing-native-js-functions";
 import mongoose, { Collection, Connection, Types } from "mongoose";
-import { ChangeEvent, ChangeStream, Long } from "mongodb";
+import { ChangeEvent, ChangeStream, Long, ObjectID, ObjectId } from "mongodb";
 import { Projection, Provider } from "./Provider";
 import { ProviderCache } from "./ProviderCache";
 import { Database } from "./Database";
@@ -265,6 +265,7 @@ export class MongodbProvider extends Provider {
 
 	convertResult(obj: any) {
 		if (obj instanceof Long) return BigInt(obj.toString());
+		if (obj instanceof ObjectId) return obj.toString();
 		if (typeof obj === "object" && obj != null) {
 			Object.keys(obj).forEach((key) => {
 				obj[key] = this.convertResult(obj[key]);

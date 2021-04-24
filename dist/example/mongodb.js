@@ -8,17 +8,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 process.on("uncaughtException", console.error);
 process.on("unhandledRejection", console.error);
 setTimeout(() => { }, 10000000);
 const Mongodb_1 = require("../Mongodb");
-const db = new Mongodb_1.MongoDatabase();
+const express_1 = __importDefault(require("express"));
+const db = new Mongodb_1.MongoDatabase("mongodb+srv://devUser:uzbDYuLDV6WvoTCA@server.8omlw.mongodb.net/Developer?retryWrites=true&w=majority", { useNewUrlParser: true, useUnifiedTopology: true });
+const app = express_1.default();
+app.listen(3001);
+app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield db.data.einsätze.get();
+    console.log(result);
+    res.json(result);
+}));
 db.init().then(() => __awaiter(void 0, void 0, void 0, function* () {
     // @ts-ignore
-    yield db.data.test.push({ test: 2398723434058967349872349n });
-    const result = yield db.data.test.get();
-    console.log(result);
+    // await db.data.test.push({ test: "2398723434058967349872349" });
     // return test(db);
+    console.log("connected");
 }));
 //# sourceMappingURL=mongodb.js.map
