@@ -1,6 +1,6 @@
 {
 	"name": "lambert-db",
-	"version": "1.2.2",
+	"version": "1.2.3",
 	"description": "A Database abstraction layer for different DB Engines",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
