@@ -27,7 +27,7 @@
 	},
 	"homepage": "https://github.com/Trenite/Lambert-db#readme",
 	"dependencies": {
-		"missing-native-js-functions": "^1.1.8",
+		"missing-native-js-functions": "^1.2.7",
 		"mongodb": "^3.6.2",
 		"mongoose": "^5.11.8",
 		"rethinkdb-ts": "^2.4.5"
