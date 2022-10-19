@@ -1,5 +1,5 @@
 {
-	"name": "lambert-db",
+	"name": "lambert-orm",
 	"version": "1.2.4",
 	"description": "A Database abstraction layer for different DB Engines",
 	"main": "dist/index.js",
