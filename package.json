@@ -29,7 +29,7 @@
 	"dependencies": {
 		"missing-native-js-functions": "^1.2.7",
 		"mongodb": "^3.6.2",
-		"mongoose": "^5.11.8",
+		"mongoose": "^5.13.20",
 		"rethinkdb-ts": "^2.4.5"
 	},
 	"devDependencies": {
